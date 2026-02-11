@@ -68,17 +68,17 @@ security-dependencies-scan:
 ############################################
 # STAGE 4: PACKAGE
 ############################################
-package-docker:
+ppackage-docker:
   stage: package
   image: docker:latest
   services:
     - docker:dind
   script:
-    - echo "Construction de l'image Docker..."
     - docker build -t $APP_NAME:$APP_VERSION .
-    - docker build -t $APP_NAME:latest .
-    - echo "Image Docker créée avec succès!"
-    - docker images
+    - docker save $APP_NAME:$APP_VERSION > image.tar # This creates the file
+  artifacts:
+    paths:
+      - image.tar # This saves the file for the next stage
   only:
     - main
 
@@ -91,35 +91,24 @@ deploy-staging:
   services:
     - docker:dind
   script:
-    - echo "Déploiement en environnement de staging..."
-    - echo "Arrêt de l'ancienne version si elle existe..."
+    - docker load < image.tar # This brings the image back to life
     - docker stop gestion_li-staging || true
     - docker rm gestion_li-staging || true
-    - echo "Démarrage de la nouvelle version..."
     - docker run -d --name gestion_li-staging -p 3000:3000 $APP_NAME:$APP_VERSION
-    - echo "Application déployée sur staging!"
-  environment:
-    name: staging
-    url: http://staging.gestion_li.local:3000
   only:
     - main
-
 deploy-production:
   stage: deploy
   image: docker:latest
   services:
     - docker:dind
   script:
+    - echo "Chargement de l'image depuis l'artéfact..."
+    - docker load < image.tar
     - echo "Déploiement en PRODUCTION..."
-    - echo "Arrêt de l'ancienne version..."
     - docker stop gestion_li-prod || true
     - docker rm gestion_li-prod || true
-    - echo "Démarrage de la nouvelle version..."
     - docker run -d --name gestion_li-prod -p 8080:3000 $APP_NAME:$APP_VERSION
-    - echo "Application déployée en PRODUCTION!"
-  environment:
-    name: production
-    url: http://www.gestion_li.com
   when: manual
   only:
     - main
