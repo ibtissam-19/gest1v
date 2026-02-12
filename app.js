@@ -1,7 +1,13 @@
+require('dotenv').config();
 const express = require('express');
 const app = express();
-const port = 3000;
+const apiKey = process.env.API_KEY;
+const dbUrl = process.env.DATABASE_URL;
+const port = process.env.PORT || 3000;
+console.log(`Le serveur utilise la clé : ${apiKey}`);
 const shoppingList = require('./appp');
+const config = require('./config');
+console.log(config.apiKey);
 app.use(express.json());
 app.use(express.static('public'));
 app.get('/api/items',(req,res)=>{
