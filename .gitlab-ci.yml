@@ -95,6 +95,9 @@ deploy-staging:
     - docker stop gestion_li-staging || true
     - docker rm gestion_li-staging || true
     - docker run -d --name gestion_li-staging -p 3000:3000 $APP_NAME:$APP_VERSION
+  environment:
+    name: staging
+    url: http://staging.gestion_li.local:3000
   only:
     - main
 deploy-production:
@@ -109,6 +112,9 @@ deploy-production:
     - docker stop gestion_li-prod || true
     - docker rm gestion_li-prod || true
     - docker run -d --name gestion_li-prod -p 8080:3000 $APP_NAME:$APP_VERSION
+  environment:
+    name: production
+    url: http://gestion_li.local:8080
   when: manual
   only:
     - main
